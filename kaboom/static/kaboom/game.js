@@ -19,9 +19,11 @@ loadSprite("fox", "fox.png")
 
 
 const floor_height = 40
+//TODO when resized
+const floor_y = height()-floor_height
 
 const floor =add([
-  pos(0, height()-floor_height),
+  pos(0, floor_y),
   rect(width(), floor_height),
   area(),
   color(120,120,120),
@@ -38,7 +40,6 @@ function gravity() {
   const jump_charge_max = 10
   return {
     update() {
-      const floor_y = height()-floor_height
       if (this.pos.y > floor_y) {
         this.pos.y = floor_y
       }
@@ -53,7 +54,6 @@ function gravity() {
       }
     },
     jump(force=Math.floor(jump_charge/2), extra=15) {
-      const floor_y = height()-floor_height
       if (this.pos.y === floor_y) {
         acc_y = -(force+extra)
       }
@@ -74,7 +74,7 @@ function gravity() {
 
 const player = add([
   sprite("kentucky1"),
-  pos(width()-75, height()-floor_height-200),
+  pos(width()-75, floor_y-200),
   area(),
   gravity(),
   scale(5),
@@ -112,7 +112,7 @@ onUpdate("bad", (b) => {
 function addFox() {
   return add([
     sprite("fox"),
-    pos(0, height()-floor_height),
+    pos(0, floor_y),
     anchor("botright"),
     area(),
     scale(0.35),
@@ -132,9 +132,19 @@ function random_boolean_with_weight(weight) {
 
 let weight = 6;
 
-const object_creation = setInterval(() => {
-  weight+=0.08
-  if (random_boolean_with_weight(weight) && random_boolean_with_weight(weight) && random_boolean_with_weight(weight) && random_boolean_with_weight(weight) && random_boolean_with_weight(weight) && random_boolean_with_weight(weight)) {
+
+let loop_count = 0
+let loop_add = 24 //meaning how often a obs is created, in this case every 16 loops
+
+const loop_add_max = 245
+const loop_add_min = 12
+
+const obs_creation = setInterval(() => {
+  if (loop_count % loop_add) {
+    if (loop_count % Math.min(loop_add_add_max,loop_add*loop_add)) {
+      loop_add = Math.max(loop_add-1, loop_add_min)
+    }
     addFox()
   }
+  loop_count++
 }, 100)
