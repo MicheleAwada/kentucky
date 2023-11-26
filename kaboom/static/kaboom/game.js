@@ -525,7 +525,7 @@ function get_kentucky_speed(amplifier = 1) {
 }
 
 let add_food_every = 600;
-let skip_food = 1;
+let skip_food = 2;
 
 const change_food_dur_max = 600;
 const change_food_change_max = 400;
@@ -561,7 +561,7 @@ const obs_manipulation = setInterval(() => {
 				0
 			) {
 				add_bad_every = Math.max(add_bad_every + 1);
-				skip_bad = choose([1, 1, 2, 2, 3]);
+				skip_bad = choose([1, 1, 1, 1, 2, 2, 3]);
 			}
 			
 			if (score > 200) {
@@ -582,7 +582,7 @@ const obs_manipulation = setInterval(() => {
 				0
 			) {
 				add_food_every = Math.min(add_food_every + 1, change_food_dur_max);
-				skip_food = choose([1, 1, 1, 1, 2, 2, 3]);
+				skip_food = choose([1, 1, 2, 2, 3]);
 			}
 
 			choose(food)();
