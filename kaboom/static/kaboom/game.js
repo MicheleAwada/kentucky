@@ -27,6 +27,14 @@ loadSprite("kentucky", "kentucky spritesheet.png", {
 		},
 		jump: { from: 0, to: 0, loop: true, speed: kentucky_animation_speed },
 		glide: { from: 12, to: 13, loop: true, speed: kentucky_animation_speed },
+		eat: { from: 14, to: 14, loop: false, speed: 1 },
+		hurt: {
+			from: 15,
+			to: 17,
+			loop: true,
+			pingpong: true,
+			speed: kentucky_animation_speed,
+		},
 	},
 });
 
@@ -235,6 +243,7 @@ player.onCollide("food", (f) => {
 	f.destroy();
 	// TODO add health
 	// player.heal();
+	short_animation(player, "eat", "walk", 156, player.is_normal);
 });
 
 player.onCollide("bad", (b) => {
@@ -242,6 +251,7 @@ player.onCollide("bad", (b) => {
 	b.destroy();
 	// TODO hurt
 	// player.hurt();
+	short_animation(player, "hurt", "walk", 1500, player.is_normal);
 });
 
 onKeyPress("space", () => {
