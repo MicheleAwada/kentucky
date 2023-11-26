@@ -93,6 +93,12 @@ loadSprite("worm", "food/worm spritesheet.png", {
 	},
 });
 
+//gui
+
+loadSprite("heart", "gui/heart.png");
+
+
+
 
 const floor_height = 30;
 // TODO when resized // actually maybe not needed
@@ -212,6 +218,56 @@ function physics() {
 	};
 }
 
+const baseHealth = 3;
+const maxHealth = 5;
+
+function addHealthHeart(hearts) {
+	const number_of_hearts = hearts.length;
+
+	const base_gapy = 20;
+	const base_gapx = 30;
+
+	const gapx = 25;
+
+	const original_heart_size = 9;
+	const desired_heart_size = 50;
+	const heart_scale_by = scale_for_image(
+		original_heart_size,
+		desired_heart_size
+	);
+
+	hearts.push(
+		add([
+			sprite("heart"),
+			"gui",
+			"heart",
+			"health",
+			pos(
+				number_of_hearts * (desired_heart_size + gapx) + base_gapx,
+				base_gapy
+			),
+			scale(heart_scale_by),
+		])
+	);
+	return hearts;
+}
+
+function removeHealthHeart(hearts) {
+	const last_heart = hearts.pop(-1);
+	last_heart.destroy();
+	return hearts;
+}
+
+function getHealthHearts() {
+	let hearts = [];
+	for (let i = 0; i < baseHealth; i++) {
+		addHealthHeart(hearts);
+	}
+	return hearts;
+}
+
+let hearts = getHealthHearts();
+
 function scale_for_image(base, desired) {
 	return desired / base;
 }
@@ -231,6 +287,7 @@ const player = add([
 	physics(),
 	scale(scale_for_kentucky),
 	anchor("botright"),
+	health(baseHealth),
 	"player",
 	"kentucky",
 	{
@@ -239,18 +296,35 @@ const player = add([
 	},
 ]);
 
+
+player.onHeal(() => {
+	const maxed = player.hp() > maxHealth;
+	if (maxed) {
+		player.setHP(maxHealth);
+	} else {
+		hearts = addHealthHeart(hearts);
+	}
+});
+
+player.onHurt(() => {
+	hearts = removeHealthHeart(hearts);
+});
+
+player.onDeath(() => {
+	// TODO
+});
+
+
 player.onCollide("food", (f) => {
 	f.destroy();
-	// TODO add health
-	// player.heal();
+	player.heal();
 	short_animation(player, "eat", "walk", 156, player.is_normal);
 });
 
 player.onCollide("bad", (b) => {
 	// TODO remove and make player invisible for short period of time
 	b.destroy();
-	// TODO hurt
-	// player.hurt();
+	player.hurt();
 	short_animation(player, "hurt", "walk", 1500, player.is_normal);
 });
 
