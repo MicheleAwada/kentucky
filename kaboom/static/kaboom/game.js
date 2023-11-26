@@ -70,7 +70,7 @@ const floor = add([
 
 setGravity(1000);
 
-function gravity() {
+function physics() {
 	let acc_y = 0;
 	let is_air = false;
 	let gliding = false;
@@ -102,7 +102,7 @@ function gravity() {
 
 				// above ground
 				if (this.pos.y < floor_y) {
-					acc_y++;
+					acc_y += gravity_time;;
 				} else {
 					//on ground
 					if (is_air) {
@@ -190,7 +190,7 @@ const player = add([
 	}),
 	pos(width() - 75, floor_y - 200),
 	area(),
-	gravity(),
+	physics(),
 	scale(scale_for_kentucky),
 	anchor("botright"),
 	"player",
