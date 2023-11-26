@@ -55,6 +55,11 @@ loadSprite("redfox", "fox/redfox spritesheet.png", {
 	},
 });
 
+// food
+
+loadSprite("banana", "food/banana.png");
+loadSprite("strawberry", "food/strawberry.png");
+
 
 const floor_height = 30;
 // TODO when resized // actually maybe not needed
@@ -350,6 +355,11 @@ const change_bad_dur_min = 12;
 
 const loop_animate = 5;
 
+const food = [
+	() => summonFood(() => sprite("banana")),
+	() => summonFood(() => sprite("strawberry")),
+];
+
 
 const obs_manipulation = setInterval(() => {
 	if (score % add_bad_every === 0) {
@@ -367,6 +377,23 @@ const obs_manipulation = setInterval(() => {
 			}
 
 			summonFox();
+		}
+	}
+	if (score % add_food_every === 0) {
+		if (skip_food) {
+			skip_food--;
+		} else {
+			// making duration less as you play more to summon foxes
+			if (
+				score %
+					Math.min(change_food_change_max, add_food_every * add_food_every) ===
+				0
+			) {
+				add_food_every = Math.min(add_food_every + 1, change_food_dur_max);
+				skip_food = choose([1, 1, 1, 1, 2, 2, 3]);
+			}
+
+			choose(food)();
 		}
 	}
 
