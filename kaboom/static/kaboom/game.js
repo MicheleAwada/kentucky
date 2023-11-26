@@ -56,9 +56,34 @@ loadSprite("redfox", "fox/redfox spritesheet.png", {
 });
 
 // food
+const worm_animation_speed = 5;
+
 
 loadSprite("banana", "food/banana.png");
 loadSprite("strawberry", "food/strawberry.png");
+loadSprite("worm", "food/worm spritesheet.png", {
+	sliceX: 2,
+	anims: {
+		walk: {
+			from: 0,
+			to: 1,
+			loop: true,
+			speed: worm_animation_speed,
+		},
+		static1: {
+			from: 0,
+			to: 0,
+			loop: false,
+			speed: 1,
+		},
+		static1: {
+			from: 1,
+			to: 1,
+			loop: false,
+			speed: 1,
+		},
+	},
+});
 
 
 const floor_height = 30;
@@ -206,13 +231,17 @@ const player = add([
 	},
 ]);
 
-
+player.onCollide("food", (f) => {
+	f.destroy();
+	// TODO add health
+	// player.heal();
+});
 
 player.onCollide("bad", (b) => {
+	// TODO remove and make player invisible for short period of time
 	b.destroy();
 	// TODO hurt
 	// player.hurt();
-	short_animation(player, "hurt", "walk", 1500, player.is_normal);
 });
 
 onKeyPress("space", () => {
@@ -290,6 +319,26 @@ function short_animation(obj, anim1, anim2, duration = 156, condition) {
 	}, duration);
 }
 
+function summonFood(
+	sprite_function = () => sprite("banana"),
+	move_function = () => move_obstacle(get_kentucky_speed(), true)
+) {
+	const food = add([
+		sprite_function(),
+		pos(0, floor_y),
+		anchor("botleft"),
+		area(),
+		scale(3.5),
+		move_function(),
+		"food",
+		"good",
+		{
+			dir: RIGHT,
+		},
+	]);
+	return food;
+}
+
 function summonFox() {
 	const foxes_to_redfoxes = 50;
 	const is_red_fox = chance(1 / foxes_to_redfoxes);
@@ -358,6 +407,11 @@ const loop_animate = 5;
 const food = [
 	() => summonFood(() => sprite("banana")),
 	() => summonFood(() => sprite("strawberry")),
+	() =>
+		summonFood(
+			() => sprite("worm", { anim: "walk" }),
+			() => move_obstacle(get_kentucky_speed(1.3))
+		),
 ];
 
 
