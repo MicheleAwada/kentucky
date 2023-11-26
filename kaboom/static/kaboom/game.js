@@ -63,6 +63,20 @@ loadSprite("redfox", "fox/redfox spritesheet.png", {
 	},
 });
 
+const hawk_animation_speed = 1.5;
+
+loadSprite("hawk", "hawk/hawk spritesheet.png", {
+	sliceX: 2,
+	anims: {
+		walk: {
+			from: 0,
+			to: 1,
+			loop: true,
+			speed: hawk_animation_speed,
+		},
+	},
+});
+
 // food
 const worm_animation_speed = 5;
 
@@ -423,6 +437,42 @@ function summonFood(
 	return food;
 }
 
+function summonHawk() {
+	const hawks_to_rare_hawks = 50;
+	const is_rare_hawk = false;
+
+	const base_extra_speed_amplifier = 0.85;
+	const max_speed = 700;
+
+	const hawk_height_from_ground = 250;
+	const hawk_height = floor_y - hawk_height_from_ground;
+
+	const speed = Math.min(
+		get_kentucky_speed(base_extra_speed_amplifier),
+		max_speed
+	);
+	const base_hawk = [
+		pos(0, hawk_height),
+		anchor("botright"),
+		move_obstacle(speed, true, 50, 60, hawk_height),
+		area(),
+		scale(3.5),
+		"bad",
+		"fox",
+		"ground",
+		{
+			dir: RIGHT,
+			dead: false,
+		},
+	];
+
+	if (is_rare_hawk) {
+		// TODO
+	} else {
+		return add([sprite("hawk", { anim: "walk", flipX: true }), ...base_hawk]);
+	}
+}
+
 function summonFox() {
 	const foxes_to_redfoxes = 50;
 	const is_red_fox = chance(1 / foxes_to_redfoxes);
@@ -481,7 +531,7 @@ const change_food_dur_max = 600;
 const change_food_change_max = 400;
 
 let add_bad_every = 50; //meaning how often a obs is created, in this case every 50 loops so every 5 seconds
-let skip_bad = 2;
+let skip_bad = 1;
 
 const change_bad_change_max = 256;
 const change_bad_dur_min = 12;
@@ -513,8 +563,12 @@ const obs_manipulation = setInterval(() => {
 				add_bad_every = Math.max(add_bad_every + 1);
 				skip_bad = choose([1, 1, 2, 2, 3]);
 			}
-
-			summonFox();
+			
+			if (score > 200) {
+				choose(summonFox, summonHawk)();
+			} else {
+				summonFox();
+			}
 		}
 	}
 	if (score % add_food_every === 0) {
