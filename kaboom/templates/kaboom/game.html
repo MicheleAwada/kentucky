@@ -17,9 +17,12 @@
                 height: 100%;
             }
 		</style>
+		<link rel="icon" href="{% static 'main/images/favicon.png' %}" />
 	</head>
 	<body>
-		<script src="https://unpkg.com/kaboom/dist/kaboom.js"></script>
+		<script src="{% static 'kaboom/utils.js' %}"></script>
+		<script src="{% static 'kaboom/kaboom.js' %}"></script>
+		<!-- <script src="https://unpkg.com/kaboom/dist/kaboom.js"></script> -->
 		<script src="{% static 'kaboom/game.js' %}"></script>
 
 	</body>
