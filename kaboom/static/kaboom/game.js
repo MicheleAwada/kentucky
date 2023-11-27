@@ -5,8 +5,8 @@ kaboom({
 	global: true,
 	background: [135, 206, 235],
 	font: "rainyhearts",
+	scale: 0.5,
 });
-
 const kentucky_animation_speed = 4;
 
 loadFont("rainyhearts", "static/kaboom/fonts/rainyhearts.ttf")
@@ -116,13 +116,28 @@ loadSprite("worm", "food/worm spritesheet.png", {
 loadSprite("heart", "gui/heart.png");
 
 
+bg = add([
+	z(0),
+	fixed(),
+])
+
+
+obj = add ([
+	z(100),
+	fixed(),
+])
+
+ui = add([
+	z(200),
+	fixed(),
+])
 
 
 const floor_height = 30;
 // TODO when resized // actually maybe not needed
 const floor_y = height() - floor_height;
 
-const floor = add([
+const floor = bg.add([
 	pos(0, floor_y),
 	rect(width(), floor_height),
 	area(),
@@ -145,6 +160,8 @@ function physics() {
 	const base_jump_force_amplifier = 6.5;
 	const base_jump_extra_amplifier = 1.1;
 	const jump_charge_max_time = 2.5;
+	const jump_charge_force = 40;
+	const vc = jump_charge_force / jump_charge_max_time;
 	const jump_charge_extra = 20;
 
 	const base_gravity_amplifier = 60;
@@ -230,12 +247,12 @@ function physics() {
 				!jump_charge_maxed && stop_n_animate(this, "max_jump_charge");
 				jump_charge_maxed = true;
 			} else {
-				jump_charge = jump_charge + dt();
+				jump_charge += vc * dt();
 			}
 			return jump_charge;
 		},
 		charged_jump_is_max() {
-			return jump_charge >= jump_charge_max_time;
+			return jump_charge/vcx >= jump_charge_max_time;
 		},
 		dont_wait_till_ground() {
 			wait_till_ground = false;
@@ -254,7 +271,7 @@ function physics() {
 	};
 }
 
-const baseHealth = 2;
+const baseHealth = 1;
 const maxHealth = 5;
 
 
@@ -284,7 +301,7 @@ function addHealthHeart(hearts) {
 	);
 
 	hearts.push(
-		add([
+		ui.add([
 			sprite("heart"),
 			"gui",
 			"heart",
@@ -323,7 +340,7 @@ const scale_for_kentucky = scale_for_image(base_kentucky_image_height, 875);
 const base_kentucky_speed = 250; //basically just the speed of "static" objects to make kentucky look moving
 let kentucky_speed = base_kentucky_speed; //basically just the speed of "static" objects to make kentucky look moving
 
-const player = add([
+const player = obj.add([
 	sprite("kentucky", {
 		anim: "walk",
 	}),
@@ -352,13 +369,11 @@ player.onHeal(() => {
 });
 
 player.onHurt(() => {
-	console.log("DEBUG1")
 	hearts = removeHealthHeart(hearts);
 	player.hp() !== 0 && short_animation(player, "hurt", "walk", 1500, player.is_normal);
 });
 
 player.onDeath(() => {
-	console.log("DEBUG2")
 	player.dead = true
 	player.stop()
 	player.use(sprite("dead kentucky"))
@@ -370,28 +385,11 @@ player.onDeath(() => {
 	const is_high_score = score > old_high_score
 	is_high_score && localStorage.setItem("high_score", score)
 	
-	const play_again = add([
-		rect(220, 65),
-		color(192, 12, 28),
-		pos(width() / 2, height() / 2),
-		anchor("center"),
-		area(),
-		"button",
-		"gui",
-	])
-	const play_again_text = add([
-		text("Play Again?"),
-		color(255, 255, 255),
-		pos(width() / 2, height() / 2),
-		anchor("center"),
-		"text",
-		"gui",
-	])
-	play_again.onClick(() => {
+
+	function play_again_button_onClick() {
 		destroyAll("entity")
 		kentucky_speed = base_kentucky_speed
-		play_again.destroy()
-		play_again_text.destroy()
+		play_again_button.destroy()
 		player.dead = false
 		player.reset_physics()
 		player.use(
@@ -403,7 +401,11 @@ player.onDeath(() => {
 		hearts = getHealthHearts()
 		resetScore()
 		start_obs_creation()
-	})
+	}
+
+	const play_again_button = addButton("You Died.\nPlay Again!", vec2(width()/2, height()/2), ui)
+	play_again_button.onClick(play_again_button_onClick)
+	onKeyPress("space", play_again_button_onClick)
 });
 
 
@@ -418,15 +420,21 @@ player.onCollide("bad", (b) => {
 	player.hurt();
 });
 
-onKeyPress("space", () => {
+function input_press() {
 	player.glide_or_charge_jump();
-});
+}
 
-onKeyRelease("space", () => {
+function input_release() {
 	player.dont_wait_till_ground();
 	player.stop_glide();
 	player.jump();
-});
+}
+
+onKeyPress("space", input_press);
+onKeyRelease("space", input_release);
+
+onTouchStart("space", input_press);
+onTouchEnd("space", input_release);
 
 function move_obstacle(
 	speed = get_kentucky_speed(),
@@ -497,7 +505,7 @@ function summonFood(
 	sprite_function = () => sprite("banana"),
 	move_function = () => move_obstacle(get_kentucky_speed(), true)
 ) {
-	const food = add([
+	const food = obj.add([
 		sprite_function(),
 		pos(0, floor_y),
 		anchor("botleft"),
@@ -547,7 +555,7 @@ function summonHawk() {
 	if (is_rare_hawk) {
 		// TODO
 	} else {
-		return add([sprite("hawk", { anim: "walk", flipX: true }), ...base_hawk]);
+		return obj.add([sprite("hawk", { anim: "walk", flipX: true }), ...base_hawk]);
 	}
 }
 
@@ -558,6 +566,11 @@ function summonFox() {
 	const base_extra_speed_amplifier = 1.2;
 	const max_speed = 1000;
 
+	const fox_image_height = 25
+	const desired_fox_image_height = 75
+	const scale_by = scale_for_image(fox_image_height, desired_fox_image_height)
+
+
 	const base_fox = [
 		pos(0, floor_y),
 		anchor("botright"),
@@ -565,7 +578,7 @@ function summonFox() {
 			Math.min(get_kentucky_speed(base_extra_speed_amplifier), max_speed)
 		),
 		area(),
-		scale(3.5),
+		scale(scale_by),
 		"bad",
 		"fox",
 		"ground",
@@ -577,14 +590,14 @@ function summonFox() {
 	];
 
 	if (is_red_fox) {
-		return add([
+		return obj.add([
 			sprite("redfox", { anim: "walk" }),
 			"redfox",
 			"rare",
 			...base_fox,
 		]);
 	} else {
-		return add([sprite("fox", { anim: "walk" }), ...base_fox]);
+		return obj.add([sprite("fox", { anim: "walk" }), ...base_fox]);
 	}
 }
 
@@ -598,7 +611,7 @@ function scoreToText(scoreVal) {
 
 const scoreLabelPaddingX = 40
 const scoreLabelPaddingY = 25
-const scoreLabel = add([
+const scoreLabel = ui.add([
 	text(scoreToText(score)),
 	pos(width()-scoreLabelPaddingX, scoreLabelPaddingY),
 	anchor("topright"),
@@ -671,6 +684,9 @@ function start_obs_creation() {
 start_obs_creation()
 
 function obs_loop() {
+	if (!isFocused()) {
+		return
+	}
 	addToScore()
 	if (score % add_bad_every === 0) {
 		if (skip_bad) {
