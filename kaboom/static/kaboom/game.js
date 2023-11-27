@@ -345,7 +345,19 @@ player.onHurt(() => {
 });
 
 player.onDeath(() => {
+	player.dead = true
+	player.stop()
+	player.use(sprite("dead kentucky"))
+	clearObjectCreation();
+	destroyAll("heart")
+	hearts = getHealthHearts()
+	kentucky_speed = 0
+	const final_score = score
+	default_values()
 
+	const old_high_score = localStorage.getItem("high_score") || 0
+	const is_high_score = final_score > old_high_score
+	is_high_score && localStorage.setItem("high_score", final_score)
 	
 
 });
