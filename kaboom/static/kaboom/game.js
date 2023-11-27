@@ -257,6 +257,17 @@ function physics() {
 const baseHealth = 2;
 const maxHealth = 5;
 
+
+function getHealthHearts() {
+	let hearts = []
+	for (let i = 0; i < baseHealth; i++) {
+		hearts = addHealthHeart(hearts);
+	}
+	return hearts;
+}
+
+let hearts = getHealthHearts();
+
 function addHealthHeart(hearts) {
 	const number_of_hearts = hearts.length;
 
@@ -297,15 +308,9 @@ function removeHealthHeart(hearts) {
 	return hearts;
 }
 
-function getHealthHearts() {
-	let hearts = [];
-	for (let i = 0; i < baseHealth; i++) {
-		addHealthHeart(hearts);
-	}
-	return hearts;
-}
 
-let hearts = getHealthHearts();
+
+
 
 function scale_for_image(base, desired) {
 	return desired / base;
@@ -347,17 +352,17 @@ player.onHeal(() => {
 });
 
 player.onHurt(() => {
+	console.log("DEBUG1")
 	hearts = removeHealthHeart(hearts);
 	player.hp() !== 0 && short_animation(player, "hurt", "walk", 1500, player.is_normal);
 });
 
 player.onDeath(() => {
+	console.log("DEBUG2")
 	player.dead = true
 	player.stop()
 	player.use(sprite("dead kentucky"))
 	clearObjectCreation();
-	destroyAll("heart")
-	hearts = getHealthHearts()
 	kentucky_speed = 0
 	default_values()
 
@@ -366,7 +371,7 @@ player.onDeath(() => {
 	is_high_score && localStorage.setItem("high_score", score)
 	
 	const play_again = add([
-		text("Play Again?"),
+		rect(220, 65),
 		color(192, 12, 28),
 		pos(width() / 2, height() / 2),
 		anchor("center"),
@@ -374,10 +379,19 @@ player.onDeath(() => {
 		"button",
 		"gui",
 	])
+	const play_again_text = add([
+		text("Play Again?"),
+		color(255, 255, 255),
+		pos(width() / 2, height() / 2),
+		anchor("center"),
+		"text",
+		"gui",
+	])
 	play_again.onClick(() => {
 		destroyAll("entity")
 		kentucky_speed = base_kentucky_speed
 		play_again.destroy()
+		play_again_text.destroy()
 		player.dead = false
 		player.reset_physics()
 		player.use(
@@ -385,6 +399,8 @@ player.onDeath(() => {
 				anim: "walk",
 			}),
 		);
+		destroyAll("hearts")
+		hearts = getHealthHearts()
 		resetScore()
 		start_obs_creation()
 	})
