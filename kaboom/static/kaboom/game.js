@@ -151,6 +151,12 @@ function physics() {
 	const base_gliding_gravity_amplifier = 10;
 	let gravity_amplifier = base_gravity_amplifier;
 	return {
+		reset_physics() {
+			this.stop_glide()
+			jump_charge=0
+			this.dont_wait_till_ground()
+			jump_charge_maxed = false
+		},
 		update() {
 			if (player.dead) {
 				if (player.pos.y === floor_y) {
@@ -158,6 +164,8 @@ function physics() {
 				}
 				this.stop_glide()
 				jump_charge=0
+				this.dont_wait_till_ground()
+				jump_charge_maxed = false
 			}
 			if (this.pos.y > floor_y) {
 				this.pos.y = floor_y;
@@ -230,7 +238,6 @@ function physics() {
 			return jump_charge >= jump_charge_max_time;
 		},
 		dont_wait_till_ground() {
-			if (player.dead) {return}
 			wait_till_ground = false;
 		},
 		is_grounded() {
@@ -352,14 +359,35 @@ player.onDeath(() => {
 	destroyAll("heart")
 	hearts = getHealthHearts()
 	kentucky_speed = 0
-	const final_score = score
 	default_values()
 
 	const old_high_score = localStorage.getItem("high_score") || 0
-	const is_high_score = final_score > old_high_score
-	is_high_score && localStorage.setItem("high_score", final_score)
+	const is_high_score = score > old_high_score
+	is_high_score && localStorage.setItem("high_score", score)
 	
-
+	const play_again = add([
+		text("Play Again?"),
+		color(192, 12, 28),
+		pos(width() / 2, height() / 2),
+		anchor("center"),
+		area(),
+		"button",
+		"gui",
+	])
+	play_again.onClick(() => {
+		destroyAll("entity")
+		kentucky_speed = base_kentucky_speed
+		play_again.destroy()
+		player.dead = false
+		player.reset_physics()
+		player.use(
+			sprite("kentucky", {
+				anim: "walk",
+			}),
+		);
+		resetScore()
+		start_obs_creation()
+	})
 });
 
 
@@ -462,6 +490,7 @@ function summonFood(
 		move_function(),
 		"food",
 		"good",
+		"entity",
 		{
 			dir: RIGHT,
 		},
@@ -492,6 +521,7 @@ function summonHawk() {
 		"bad",
 		"fox",
 		"ground",
+		"entity",
 		{
 			dir: RIGHT,
 			dead: false,
@@ -523,6 +553,7 @@ function summonFox() {
 		"bad",
 		"fox",
 		"ground",
+		"entity",
 		{
 			dir: RIGHT,
 			dead: false,
@@ -545,25 +576,30 @@ function summonFox() {
 
 let score = 0;
 
-function scoreText(scoreVal) {
+function scoreToText(scoreVal) {
 	return `Score: ${scoreVal}`
 }
 
-function addToScore(scoreLabel, multiplier = 1) {
-	scoreLabel.value += multiplier;
-	scoreLabel.text = scoreText(scoreLabel.value);
-
-}
 const scoreLabelPaddingX = 40
 const scoreLabelPaddingY = 25
 const scoreLabel = add([
-	text(scoreText(score)),
+	text(scoreToText(score)),
 	pos(width()-scoreLabelPaddingX, scoreLabelPaddingY),
 	anchor("topright"),
     {
 		value: score,
 	},
 ])
+
+function addToScore(multiplier = 1) {
+	scoreLabel.value += multiplier;
+	scoreLabel.text = scoreToText(scoreLabel.value);
+}
+
+function resetScore() {
+	scoreLabel.value = score = 0;
+	scoreLabel.text = scoreToText(scoreLabel.value);
+}
 
 function get_kentucky_speed(amplifier = 1) {
 	const kentucky_slow_rate = 100;
@@ -604,7 +640,6 @@ const food = [
 ];
 
 function default_values() {
-	score = 0;
 	add_food_every = 250;
 	skip_food = 0;
 	add_bad_every = 34; //meaning how often a obs is created, in this case every 50 loops so every 5 seconds
@@ -613,8 +648,14 @@ function default_values() {
 default_values()
 
 
-const obs_manipulation = setInterval(() => {
-	addToScore(scoreLabel)
+let obs_creation_interval;
+function start_obs_creation() {
+	obs_creation_interval = setInterval(obs_loop, 100);
+}
+start_obs_creation()
+
+function obs_loop() {
+	addToScore()
 	if (score % add_bad_every === 0) {
 		if (skip_bad) {
 			skip_bad--;
@@ -656,9 +697,9 @@ const obs_manipulation = setInterval(() => {
 
 
 	score++;
-}, 100);
+}
 
 
 function clearObjectCreation() {
-	return clearInterval(obs_manipulation)
+	return clearInterval(obs_creation_interval)
 }
