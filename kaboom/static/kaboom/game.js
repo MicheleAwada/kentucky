@@ -4,9 +4,12 @@ kaboom({
 	debug: true,
 	global: true,
 	background: [135, 206, 235],
+	font: "rainyhearts",
 });
 
 const kentucky_animation_speed = 4;
+
+loadFont("rainyhearts", "static/kaboom/fonts/rainyhearts.ttf")
 
 loadRoot("static/kaboom/images/");
 loadSprite("kentucky", "kentucky spritesheet.png", {
@@ -37,6 +40,7 @@ loadSprite("kentucky", "kentucky spritesheet.png", {
 		},
 	},
 });
+loadSprite("dead kentucky", "kentucky dead.png")
 
 const fox_animation_speed = 8;
 
@@ -148,6 +152,13 @@ function physics() {
 	let gravity_amplifier = base_gravity_amplifier;
 	return {
 		update() {
+			if (player.dead) {
+				if (player.pos.y === floor_y) {
+					return
+				}
+				this.stop_glide()
+				jump_charge=0
+			}
 			if (this.pos.y > floor_y) {
 				this.pos.y = floor_y;
 			} else {
@@ -181,6 +192,7 @@ function physics() {
 			}
 		},
 		jump(force = Math.floor(jump_charge), extra = jump_charge_extra) {
+			if (player.dead) {return}
 			force *= base_jump_amplifier * base_jump_force_amplifier;
 			extra *= base_jump_amplifier * base_jump_extra_amplifier;
 			if (this.pos.y === floor_y) {
@@ -193,6 +205,7 @@ function physics() {
 			stop_n_animate(this, "jump");
 		},
 		glide_or_charge_jump() {
+			if (player.dead) {return}
 			if (!is_air) {
 				stop_n_animate(this, "jump_charge");
 				this.charge_jump();
@@ -204,6 +217,7 @@ function physics() {
 			}
 		},
 		charge_jump() {
+			if (player.dead) {return}
 			if (this.charged_jump_is_max()) {
 				!jump_charge_maxed && stop_n_animate(this, "max_jump_charge");
 				jump_charge_maxed = true;
@@ -216,13 +230,14 @@ function physics() {
 			return jump_charge >= jump_charge_max_time;
 		},
 		dont_wait_till_ground() {
+			if (player.dead) {return}
 			wait_till_ground = false;
 		},
 		is_grounded() {
 			return !is_air;
 		},
 		is_normal() {
-			return this.is_grounded() && jump_charge === 0; // TODO && not crouched
+			return this.is_grounded() && jump_charge === 0 && !player.dead; // TODO && not crouched
 		},
 		stop_glide() {
 			glide = false;
@@ -232,7 +247,7 @@ function physics() {
 	};
 }
 
-const baseHealth = 3;
+const baseHealth = 2;
 const maxHealth = 5;
 
 function addHealthHeart(hearts) {
@@ -267,6 +282,9 @@ function addHealthHeart(hearts) {
 }
 
 function removeHealthHeart(hearts) {
+	if (!hearts) {
+		return hearts
+	}
 	const last_heart = hearts.pop(-1);
 	last_heart.destroy();
 	return hearts;
@@ -290,7 +308,8 @@ function scale_for_image(base, desired) {
 const base_kentucky_image_height = 175;
 const scale_for_kentucky = scale_for_image(base_kentucky_image_height, 875);
 
-const kentucky_speed = 250; //basically just the speed of "static" objects to make kentucky look moving
+const base_kentucky_speed = 250; //basically just the speed of "static" objects to make kentucky look moving
+let kentucky_speed = base_kentucky_speed; //basically just the speed of "static" objects to make kentucky look moving
 
 const player = add([
 	sprite("kentucky", {
@@ -310,36 +329,37 @@ const player = add([
 	},
 ]);
 
-
 player.onHeal(() => {
 	const maxed = player.hp() > maxHealth;
 	if (maxed) {
 		player.setHP(maxHealth);
 	} else {
 		hearts = addHealthHeart(hearts);
+		short_animation(player, "eat", "walk", 156, player.is_normal);
 	}
 });
 
 player.onHurt(() => {
 	hearts = removeHealthHeart(hearts);
+	player.hp() !== 0 && short_animation(player, "hurt", "walk", 1500, player.is_normal);
 });
 
 player.onDeath(() => {
-	// TODO
+
+	
+
 });
 
 
 player.onCollide("food", (f) => {
 	f.destroy();
 	player.heal();
-	short_animation(player, "eat", "walk", 156, player.is_normal);
 });
 
 player.onCollide("bad", (b) => {
 	// TODO remove and make player invisible for short period of time
 	b.destroy();
 	player.hurt();
-	short_animation(player, "hurt", "walk", 1500, player.is_normal);
 });
 
 onKeyPress("space", () => {
@@ -359,31 +379,28 @@ function move_obstacle(
 	wiggle_speed = 35,
 	base_y = floor_y
 ) {
-	let killed = false;
 	let wiggle_up = true;
 	return {
 		update() {
-			if (!killed) {
-				this.move(speed, 0);
-				if (this.pos.x > width() + 400) {
-					// plus 400 just because of image width so it doesnt go away before it goes offscreen
-					this.destroy();
+			// if (player.dead) {
+			// 	return
+			// }
+			this.move(speed, 0);
+			if (this.pos.x > width() + 400) {
+				// plus 400 just because of image width so it doesnt go away before it goes offscreen
+				this.destroy();
+			}
+			if (wiggle) {
+				m = wiggle_up ? -wiggle_speed : wiggle_speed;
+				this.move(0, m);
+				gap = base_y - this.pos.y;
+				if (gap > wiggle_height) {
+					wiggle_up = false;
 				}
-				if (wiggle) {
-					m = wiggle_up ? -wiggle_speed : wiggle_speed;
-					this.move(0, m);
-					gap = base_y - this.pos.y;
-					if (gap > wiggle_height) {
-						wiggle_up = false;
-					}
-					if (gap <= 0 && !wiggle_up) {
-						wiggle_up = true;
-					}
+				if (gap <= 0 && !wiggle_up) {
+					wiggle_up = true;
 				}
 			}
-		},
-		killed() {
-			killed = true;
 		},
 	};
 }
@@ -402,6 +419,9 @@ function animate(
 	sprite_animation_name = "walk",
 	speed = kentucky_animation_speed
 ) {
+	if (player.dead) {
+		return
+	}
 	return obj.play(sprite_animation_name, {
 		speed: speed,
 	});
@@ -513,6 +533,26 @@ function summonFox() {
 
 let score = 0;
 
+function scoreText(scoreVal) {
+	return `Score: ${scoreVal}`
+}
+
+function addToScore(scoreLabel, multiplier = 1) {
+	scoreLabel.value += multiplier;
+	scoreLabel.text = scoreText(scoreLabel.value);
+
+}
+const scoreLabelPaddingX = 40
+const scoreLabelPaddingY = 25
+const scoreLabel = add([
+	text(scoreText(score)),
+	pos(width()-scoreLabelPaddingX, scoreLabelPaddingY),
+	anchor("topright"),
+    {
+		value: score,
+	},
+])
+
 function get_kentucky_speed(amplifier = 1) {
 	const kentucky_slow_rate = 100;
 	const kentucky_max_speed = 950;
@@ -524,17 +564,20 @@ function get_kentucky_speed(amplifier = 1) {
 	);
 }
 
-let add_food_every = 600;
-let skip_food = 2;
+let add_food_every;
+let skip_food;
 
-const change_food_dur_max = 600;
+const change_food_dur_max = 580;
+const change_food_dur_add = 12;
 const change_food_change_max = 400;
 
-let add_bad_every = 50; //meaning how often a obs is created, in this case every 50 loops so every 5 seconds
-let skip_bad = 1;
+
+let add_bad_every; //meaning how often a obs is created, every x/10 s loops so 50 is 5 seconds
+let skip_bad;
 
 const change_bad_change_max = 256;
 const change_bad_dur_min = 12;
+const change_bad_dur_add = 2;
 
 const loop_animate = 5;
 
@@ -548,8 +591,18 @@ const food = [
 		),
 ];
 
+function default_values() {
+	score = 0;
+	add_food_every = 250;
+	skip_food = 0;
+	add_bad_every = 34; //meaning how often a obs is created, in this case every 50 loops so every 5 seconds
+	skip_bad = 1;
+}
+default_values()
+
 
 const obs_manipulation = setInterval(() => {
+	addToScore(scoreLabel)
 	if (score % add_bad_every === 0) {
 		if (skip_bad) {
 			skip_bad--;
@@ -560,12 +613,12 @@ const obs_manipulation = setInterval(() => {
 					Math.min(change_bad_change_max, add_bad_every * add_bad_every) ===
 				0
 			) {
-				add_bad_every = Math.max(add_bad_every + 1);
+				add_bad_every = Math.max(add_bad_every + change_bad_dur_add, change_bad_dur_min);
 				skip_bad = choose([1, 1, 1, 1, 2, 2, 3]);
 			}
 			
 			if (score > 200) {
-				choose(summonFox, summonHawk)();
+				choose([summonFox, summonHawk])();
 			} else {
 				summonFox();
 			}
@@ -581,7 +634,7 @@ const obs_manipulation = setInterval(() => {
 					Math.min(change_food_change_max, add_food_every * add_food_every) ===
 				0
 			) {
-				add_food_every = Math.min(add_food_every + 1, change_food_dur_max);
+				add_food_every = Math.min(add_food_every + change_food_dur_add, change_food_dur_max);
 				skip_food = choose([1, 1, 2, 2, 3]);
 			}
 
@@ -592,3 +645,8 @@ const obs_manipulation = setInterval(() => {
 
 	score++;
 }, 100);
+
+
+function clearObjectCreation() {
+	return clearInterval(obs_manipulation)
+}
