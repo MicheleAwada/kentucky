@@ -12,7 +12,9 @@ loadFont("pixelated_font", "static/kaboom/fonts/VT323.ttf")
 loadRoot("static/kaboom/images/");
 
 
+//bg
 
+loadSprite("tree", "bg/tree0.png");
 
 
 //player
@@ -147,7 +149,7 @@ const floor_y = height() - floor_height;
 function move_background(speed_amplifier=1, debug) {
 	return {
 		update() {
-			this.move(get_kentucky_speed(2,true) * speed_amplifier, 0); // This line might be problematic
+			this.move(get_kentucky_speed(1,true) * speed_amplifier, 0); // This line might be problematic
 			console.log(debug);
 			console.log(this.pos.x);
 			if (this.pos.x > width()) {
@@ -157,7 +159,26 @@ function move_background(speed_amplifier=1, debug) {
 	};
 }
 
+function add_background(sprite_name, speed_amplifier=1) {
+	const images_height = 30
+	const scale_by = scale_for_image(images_height, height())
+	const bg1 = bg.add([
+		sprite(sprite_name),
+		scale(scale_by),
+		pos(-width(), 0),
+		move_background(speed_amplifier, "bg1"),
+	])
+	const bg2 = bg.add([
+		sprite(sprite_name),
+		scale(scale_by),
+		pos(-3 * width(), 0),
+		move_background(speed_amplifier, "bg2"),
 
+	])
+
+}
+
+add_background("tree", 1)
 
 
 const floor = bg.add([
