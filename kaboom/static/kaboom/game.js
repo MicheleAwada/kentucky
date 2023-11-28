@@ -12,6 +12,11 @@ loadFont("rainyhearts", "static/kaboom/fonts/rainyhearts.ttf")
 loadRoot("static/kaboom/images/");
 
 
+
+
+
+//player
+
 const kentucky_animation_speed = 4;
 
 loadSprite("kentucky", "kentucky spritesheet.png", {
@@ -138,6 +143,22 @@ ui = add([
 const floor_height = 40;
 // TODO when resized // actually maybe not needed
 const floor_y = height() - floor_height;
+
+function move_background(speed_amplifier=1, debug) {
+	return {
+		update() {
+			this.move(get_kentucky_speed(2,true) * speed_amplifier, 0); // This line might be problematic
+			console.log(debug);
+			console.log(this.pos.x);
+			if (this.pos.x > width()) {
+				this.pos.x -= 4 * width();
+			}
+		},
+	};
+}
+
+
+
 
 const floor = bg.add([
 	pos(0, floor_y),
@@ -359,6 +380,10 @@ const player = obj.add([
 	},
 ]);
 
+function is_player_alive() {
+	return !player.dead;
+}
+
 player.onHeal(() => {
 	const maxed = player.hp() > maxHealth;
 	if (maxed) {
@@ -453,9 +478,6 @@ function move_obstacle(
 	let wiggle_up = true;
 	return {
 		update() {
-			if (player.dead) {
-				return
-			}
 			this.move(speed, 0);
 			if (this.pos.x > width() + 400) {
 				// plus 400 just because of image width so it doesnt go away before it goes offscreen
@@ -637,7 +659,10 @@ function resetScore() {
 	scoreLabel.text = scoreToText(scoreLabel.value);
 }
 
-function get_kentucky_speed(amplifier = 1) {
+function get_kentucky_speed(amplifier = 1, none_if_dead=false) {
+	if (none_if_dead && player.dead) {
+		return 0
+	}
 	const kentucky_slow_rate = 100;
 	const kentucky_max_speed = 950;
 	return (
