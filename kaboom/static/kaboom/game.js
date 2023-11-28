@@ -4,10 +4,10 @@ kaboom({
 	debug: true,
 	global: true,
 	background: [135, 206, 235],
-	font: "rainyhearts",
+	font: "pixelated_font",
 });
 
-loadFont("rainyhearts", "static/kaboom/fonts/rainyhearts.ttf")
+loadFont("pixelated_font", "static/kaboom/fonts/VT323.ttf")
 
 loadRoot("static/kaboom/images/");
 
