@@ -5,13 +5,15 @@ kaboom({
 	global: true,
 	background: [135, 206, 235],
 	font: "rainyhearts",
-	scale: 0.5,
 });
-const kentucky_animation_speed = 4;
 
 loadFont("rainyhearts", "static/kaboom/fonts/rainyhearts.ttf")
 
 loadRoot("static/kaboom/images/");
+
+
+const kentucky_animation_speed = 4;
+
 loadSprite("kentucky", "kentucky spritesheet.png", {
 	sliceX: 18,
 	anims: {
@@ -133,7 +135,7 @@ ui = add([
 ])
 
 
-const floor_height = 30;
+const floor_height = 40;
 // TODO when resized // actually maybe not needed
 const floor_y = height() - floor_height;
 
@@ -157,11 +159,10 @@ function physics() {
 	let wait_till_ground = false;
 
 	const base_jump_amplifier = 1.1;
-	const base_jump_force_amplifier = 6.5;
+	const base_jump_force_amplifier = 6;
 	const base_jump_extra_amplifier = 1.1;
-	const jump_charge_max_time = 2.5;
-	const jump_charge_force = 40;
-	const vc = jump_charge_force / jump_charge_max_time;
+	const jump_charge_max_time = 1;
+	const jump_charge_force = 1;
 	const jump_charge_extra = 20;
 
 	const base_gravity_amplifier = 60;
@@ -247,12 +248,12 @@ function physics() {
 				!jump_charge_maxed && stop_n_animate(this, "max_jump_charge");
 				jump_charge_maxed = true;
 			} else {
-				jump_charge += vc * dt();
+				jump_charge += jump_charge_force * dt();
 			}
 			return jump_charge;
 		},
 		charged_jump_is_max() {
-			return jump_charge/vcx >= jump_charge_max_time;
+			return jump_charge/jump_charge_force >= jump_charge_max_time;
 		},
 		dont_wait_till_ground() {
 			wait_till_ground = false;
@@ -315,9 +316,9 @@ function addHealthHeart(hearts) {
 	);
 	return hearts;
 }
-
+ 
 function removeHealthHeart(hearts) {
-	if (!hearts) {
+	if (hearts.length === 0) {
 		return hearts
 	}
 	const last_heart = hearts.pop(-1);
@@ -410,12 +411,18 @@ player.onDeath(() => {
 
 
 player.onCollide("food", (f) => {
+	if (player.dead) {
+		return
+	}
 	f.destroy();
 	player.heal();
 });
 
 player.onCollide("bad", (b) => {
 	// TODO remove and make player invisible for short period of time
+	if (player.dead) {
+		return
+	}
 	b.destroy();
 	player.hurt();
 });
@@ -446,9 +453,9 @@ function move_obstacle(
 	let wiggle_up = true;
 	return {
 		update() {
-			// if (player.dead) {
-			// 	return
-			// }
+			if (player.dead) {
+				return
+			}
 			this.move(speed, 0);
 			if (this.pos.x > width() + 400) {
 				// plus 400 just because of image width so it doesnt go away before it goes offscreen
