@@ -4,7 +4,7 @@ const window_min = Math.min(window_width, window_height)
 const is_width_bigger = window_width > window_height
 
 
-const scale_by = (window_min / (is_width_bigger ? 600 : 1000)) / 1.1
+const scale_by = (window_min / (is_width_bigger ? 600 : 1000)) / 1.5
 
 
 kaboom({
@@ -511,6 +511,7 @@ player.onDeath(() => {
 				anim: "walk",
 			}),
 		);
+		player.setHP(baseHealth)
 		destroyAll("hearts")
 		hearts = getHealthHearts()
 		resetScore()
@@ -554,8 +555,8 @@ function input_release() {
 onKeyPress("space", input_press);
 onKeyRelease("space", input_release);
 
-onTouchStart("space", input_press);
-onTouchEnd("space", input_release);
+onTouchStart(input_press);
+onTouchEnd(input_release);
 
 function move_obstacle(
 	speed = get_kentucky_speed(),
