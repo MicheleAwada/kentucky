@@ -13,22 +13,67 @@ loadRoot("static/kaboom/images/");
 
 
 //bg
-const day_night_cycle_speed = 1;
+const day_night_cycle_speed = 0.1;
 
 loadSprite("sky", "bg/sky spritesheet.png", {
 	sliceX: 5,
+	anims: {
+		day_night_cycle : {
+			from:0,
+			to:4,
+			pingpong:true,
+			loop:true,
+			speed: day_night_cycle_speed,
+		}
+	}
 });
 loadSprite("mountains", "bg/mountains spritesheet.png", {
 	sliceX: 5,
+	anims: {
+		day_night_cycle : {
+			from:0,
+			to:4,
+			pingpong:true,
+			loop:true,
+			speed: day_night_cycle_speed,
+		}
+	}
 });
 loadSprite("hills", "bg/hills spritesheet.png", {
 	sliceX: 5,
+	anims: {
+		day_night_cycle : {
+			from:0,
+			to:4,
+			pingpong:true,
+			loop:true,
+			speed: day_night_cycle_speed,
+		}
+	}
 });
 loadSprite("clouds", "bg/clouds spritesheet.png", {
 	sliceX: 5,
+	anims: {
+		day_night_cycle : {
+			from:0,
+			to:4,
+			pingpong:true,
+			loop:true,
+			speed: day_night_cycle_speed,
+		}
+	}
 });
 loadSprite("tree", "bg/tree spritesheet.png", {
 	sliceX: 5,
+	anims: {
+		day_night_cycle : {
+			from:0,
+			to:4,
+			pingpong:true,
+			loop:true,
+			speed: day_night_cycle_speed,
+		}
+	}
 });
 
 
@@ -167,13 +212,13 @@ function add_background(sprite_name, speed_amplifier=1) {
 	const width = 2*1000
 	const pre_move_width = -width/2
 	const bg1 = bg.add([
-		sprite(sprite_name),
+		sprite(sprite_name, {anim: "day_night_cycle"}),
 		scale(scale_by),
 		pos(-pre_move_width, 0),
 		move_background(width, speed_amplifier),
 	])
 	const bg2 = bg.add([
-		sprite(sprite_name),
+		sprite(sprite_name, {anim: "day_night_cycle"}),
 		scale(scale_by),
 		pos(-2 *width-pre_move_width, 0),
 		move_background(width, speed_amplifier),
