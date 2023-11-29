@@ -1,3 +1,12 @@
+const window_width = window.innerWidth;
+const window_height = window.innerHeight;
+const window_min = Math.min(window_width, window_height)
+const is_width_bigger = window_width > window_height
+
+
+const scale_by = (window_min / (is_width_bigger ? 600 : 1000)) / 1.1
+
+
 kaboom({
 	width: 1000,
 	height: 600,
@@ -5,6 +14,7 @@ kaboom({
 	global: true,
 	background: [135, 206, 235],
 	font: "pixelated_font",
+	scale: scale_by,
 	canvas: document.getElementById("kentucky-canvas")
 });
 
