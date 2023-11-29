@@ -16,15 +16,16 @@
             html, body   {
                 height: 100%;
             }
+			#kentucky-canvas {
+				
+			}
 		</style>
 		<link rel="icon" href="{% static 'main/images/favicon.png' %}" />
+		<script defer src="{% static 'kaboom/kaboom.js' %}"></script>
+		<script defer src="{% static 'kaboom/button.js' %}"></script>
+		<script defer src="{% static 'kaboom/game.js' %}"></script>
 	</head>
 	<body>
-		<script src="{% static 'kaboom/utils.js' %}"></script>
-		<script src="{% static 'kaboom/kaboom.js' %}"></script>
-		<script src="{% static 'kaboom/button.js' %}"></script>
-		<!-- <script src="https://unpkg.com/kaboom/dist/kaboom.js"></script> -->
-		<script src="{% static 'kaboom/game.js' %}"></script>
-
+		<canvas id="kentucky-canvas"></canvas>
 	</body>
 </html>

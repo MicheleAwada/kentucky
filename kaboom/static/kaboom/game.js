@@ -5,6 +5,7 @@ kaboom({
 	global: true,
 	background: [135, 206, 235],
 	font: "pixelated_font",
+	canvas: document.getElementById("kentucky-canvas")
 });
 
 loadFont("pixelated_font", "static/kaboom/fonts/VT323.ttf")
@@ -730,7 +731,7 @@ const high_scoreLabelPaddingX = 40
 const high_scoreLabelPaddingY = 25
 const high_scoreLabel = ui.add([
 	text(scoreToText(high_score, true)),
-	pos(width()-high_scoreLabelPaddingX, high_scoreLabelPaddingY+ 100),
+	pos(width()-high_scoreLabelPaddingX-200, high_scoreLabelPaddingY),
 	anchor("topright"),
     {
 		value: high_score,
