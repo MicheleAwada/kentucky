@@ -13,8 +13,23 @@ loadRoot("static/kaboom/images/");
 
 
 //bg
+const day_night_cycle_speed = 1;
 
-loadSprite("tree", "bg/tree0.png");
+loadSprite("sky", "bg/sky spritesheet.png", {
+	sliceX: 5,
+});
+loadSprite("mountains", "bg/mountains spritesheet.png", {
+	sliceX: 5,
+});
+loadSprite("hills", "bg/hills spritesheet.png", {
+	sliceX: 5,
+});
+loadSprite("clouds", "bg/clouds spritesheet.png", {
+	sliceX: 5,
+});
+loadSprite("tree", "bg/tree spritesheet.png", {
+	sliceX: 5,
+});
 
 
 //player
@@ -76,7 +91,7 @@ loadSprite("redfox", "fox/redfox spritesheet.png", {
 	},
 });
 
-const hawk_animation_speed = 1.5;
+const hawk_animation_speed = 3;
 
 loadSprite("hawk", "hawk/hawk spritesheet.png", {
 	sliceX: 2,
@@ -104,18 +119,6 @@ loadSprite("worm", "food/worm spritesheet.png", {
 			to: 1,
 			loop: true,
 			speed: worm_animation_speed,
-		},
-		static1: {
-			from: 0,
-			to: 0,
-			loop: false,
-			speed: 1,
-		},
-		static1: {
-			from: 1,
-			to: 1,
-			loop: false,
-			speed: 1,
 		},
 	},
 });
@@ -146,14 +149,12 @@ const floor_height = 40;
 // TODO when resized // actually maybe not needed
 const floor_y = height() - floor_height;
 
-function move_background(speed_amplifier=1, debug) {
+function move_background(obj_width = width(), speed_amplifier=1) {
 	return {
 		update() {
-			this.move(get_kentucky_speed(1,true) * speed_amplifier, 0); // This line might be problematic
-			// console.log(debug);
-			// console.log(this.pos.x);
-			if (this.pos.x > width()) {
-				this.pos.x -= 4 * width();
+			this.move(get_kentucky_speed(speed_amplifier,true), 0);
+			if (this.pos.x > Math.min(obj_width, width())) {
+				this.pos.x -= 4 * obj_width;
 			}
 		},
 	};
@@ -162,22 +163,29 @@ function move_background(speed_amplifier=1, debug) {
 function add_background(sprite_name, speed_amplifier=1) {
 	const images_height = 30
 	const scale_by = scale_for_image(images_height, height())
+	const image_width = 200
+	const width = 2*1000
+	const pre_move_width = -width/2
 	const bg1 = bg.add([
 		sprite(sprite_name),
 		scale(scale_by),
-		pos(-width(), 0),
-		move_background(speed_amplifier, "bg1"),
+		pos(-pre_move_width, 0),
+		move_background(width, speed_amplifier),
 	])
 	const bg2 = bg.add([
 		sprite(sprite_name),
 		scale(scale_by),
-		pos(-3 * width(), 0),
-		move_background(speed_amplifier, "bg2"),
+		pos(-2 *width-pre_move_width, 0),
+		move_background(width, speed_amplifier),
 
 	])
 
 }
 
+add_background("sky", 0.1)
+add_background("clouds", 0.2)
+add_background("mountains", 0.5)
+add_background("hills", 0.8)
 add_background("tree", 1)
 
 
@@ -315,7 +323,7 @@ function physics() {
 	};
 }
 
-const baseHealth = 1;
+const baseHealth = 2;
 const maxHealth = 5;
 
 
@@ -468,7 +476,7 @@ player.onCollide("food", (f) => {
 
 player.onCollide("bad", (b) => {
 	// TODO remove and make player invisible for short period of time
-	if (player.dead) {
+	if (player.dead || true) {
 		return
 	}
 	b.destroy();
@@ -580,7 +588,7 @@ function summonHawk() {
 	const hawks_to_rare_hawks = 50;
 	const is_rare_hawk = false;
 
-	const base_extra_speed_amplifier = 0.85;
+	const base_extra_speed_amplifier = 1.1;
 	const max_speed = 700;
 
 	const hawk_height_from_ground = 250;
@@ -656,11 +664,11 @@ function summonFox() {
 }
 
 
-
+let high_score = localStorage.getItem("high_score") || 0;
 let score = 0;
 
-function scoreToText(scoreVal) {
-	return `Score: ${scoreVal}`
+function scoreToText(scoreVal, high_score = false) {
+	return (high_score? "High Score" : "Score") + ": " + scoreVal
 }
 
 const scoreLabelPaddingX = 40
@@ -673,8 +681,22 @@ const scoreLabel = ui.add([
 		value: score,
 	},
 ])
+const high_scoreLabelPaddingX = 40
+const high_scoreLabelPaddingY = 25
+const high_scoreLabel = ui.add([
+	text(scoreToText(high_score, true)),
+	pos(width()-high_scoreLabelPaddingX, high_scoreLabelPaddingY+ 100),
+	anchor("topright"),
+    {
+		value: high_score,
+	},
+])
 
 function addToScore(multiplier = 1) {
+	if (score>high_score) {
+		high_scoreLabel.value = score
+		high_scoreLabel.text = scoreToText(high_scoreLabel.value, true);
+	}
 	scoreLabel.value += multiplier;
 	scoreLabel.text = scoreToText(scoreLabel.value);
 }
@@ -740,6 +762,7 @@ function obs_loop() {
 	if (!isFocused()) {
 		return
 	}
+	score++;
 	addToScore()
 	if (score % add_bad_every === 0) {
 		if (skip_bad) {
@@ -779,9 +802,6 @@ function obs_loop() {
 			choose(food)();
 		}
 	}
-
-
-	score++;
 }
 
 
