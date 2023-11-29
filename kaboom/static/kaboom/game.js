@@ -150,8 +150,8 @@ function move_background(speed_amplifier=1, debug) {
 	return {
 		update() {
 			this.move(get_kentucky_speed(1,true) * speed_amplifier, 0); // This line might be problematic
-			console.log(debug);
-			console.log(this.pos.x);
+			// console.log(debug);
+			// console.log(this.pos.x);
 			if (this.pos.x > width()) {
 				this.pos.x -= 4 * width();
 			}
@@ -273,7 +273,8 @@ function physics() {
 			stop_n_animate(this, "jump");
 		},
 		glide_or_charge_jump() {
-			if (player.dead) {return}
+			if (player.dead) {
+				console.log("dead?!");return}
 			if (!is_air) {
 				stop_n_animate(this, "jump_charge");
 				this.charge_jump();
@@ -433,8 +434,10 @@ player.onDeath(() => {
 	is_high_score && localStorage.setItem("high_score", score)
 	
 
+	const play_again_button = addButton("You Died.\nPlay Again!", vec2(width()/2, height()/2), ui)
 	function play_again_button_onClick() {
 		destroyAll("entity")
+		console.log("wtf?")
 		kentucky_speed = base_kentucky_speed
 		play_again_button.destroy()
 		player.dead = false
@@ -450,9 +453,8 @@ player.onDeath(() => {
 		start_obs_creation()
 	}
 
-	const play_again_button = addButton("You Died.\nPlay Again!", vec2(width()/2, height()/2), ui)
 	play_again_button.onClick(play_again_button_onClick)
-	onKeyPress("space", play_again_button_onClick)
+	play_again_button.onKeyPress("space", play_again_button_onClick)
 });
 
 
@@ -474,10 +476,12 @@ player.onCollide("bad", (b) => {
 });
 
 function input_press() {
+	if (player.dead) {return}
 	player.glide_or_charge_jump();
 }
 
 function input_release() {
+	if (player.dead) {return}
 	player.dont_wait_till_ground();
 	player.stop_glide();
 	player.jump();
@@ -553,7 +557,7 @@ function short_animation(obj, anim1, anim2, duration = 156, condition) {
 
 function summonFood(
 	sprite_function = () => sprite("banana"),
-	move_function = () => move_obstacle(get_kentucky_speed(), true)
+	move_function = () => move_obstacle(get_kentucky_speed(), false)
 ) {
 	const food = obj.add([
 		sprite_function(),
@@ -730,11 +734,7 @@ function default_values() {
 default_values()
 
 
-let obs_creation_interval;
-function start_obs_creation() {
-	obs_creation_interval = setInterval(obs_loop, 100);
-}
-start_obs_creation()
+
 
 function obs_loop() {
 	if (!isFocused()) {
@@ -783,6 +783,13 @@ function obs_loop() {
 
 	score++;
 }
+
+
+let obs_creation_interval;
+function start_obs_creation() {
+	obs_creation_interval = setInterval(obs_loop, 100);
+}
+start_obs_creation()
 
 
 function clearObjectCreation() {
