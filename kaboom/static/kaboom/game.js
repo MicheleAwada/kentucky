@@ -521,7 +521,7 @@ player.onCollide("food", (f) => {
 
 player.onCollide("bad", (b) => {
 	// TODO remove and make player invisible for short period of time
-	if (player.dead || true) {
+	if (player.dead) {
 		return
 	}
 	b.destroy();
