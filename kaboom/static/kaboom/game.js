@@ -558,6 +558,9 @@ onKeyRelease("space", input_release);
 onTouchStart(input_press);
 onTouchEnd(input_release);
 
+onMousePress("left", input_press)
+onMouseRelease(input_release)
+
 function move_obstacle(
 	speed = get_kentucky_speed(),
 	wiggle = false,
