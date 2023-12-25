@@ -4,7 +4,7 @@ const window_min = Math.min(window_width, window_height)
 const is_width_bigger = window_width > window_height
 
 
-const scale_by = (window_min / (is_width_bigger ? 600 : 1000)) / 1.5
+const scale_by = (window_min / (is_width_bigger ? 600 : 1000)) / (is_width_bigger ? 1.1 : 1.025);
 
 
 kaboom({
