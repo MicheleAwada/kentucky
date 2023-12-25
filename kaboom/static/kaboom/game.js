@@ -577,9 +577,9 @@ function move_obstacle(
 				this.destroy();
 			}
 			if (wiggle) {
-				m = wiggle_up ? -wiggle_speed : wiggle_speed;
+				const m = wiggle_up ? -wiggle_speed : wiggle_speed;
 				this.move(0, m);
-				gap = base_y - this.pos.y;
+				const gap = base_y - this.pos.y;
 				if (gap > wiggle_height) {
 					wiggle_up = false;
 				}
@@ -822,8 +822,6 @@ function obs_loop() {
 	if (!isFocused()) {
 		return
 	}
-	score++;
-	addToScore()
 	if (score % add_bad_every === 0) {
 		if (skip_bad) {
 			skip_bad--;
@@ -862,6 +860,8 @@ function obs_loop() {
 			choose(food)();
 		}
 	}
+    score++;
+	addToScore();
 }
 
 
