@@ -808,10 +808,10 @@ const food = [
 ];
 
 function default_values() {
-	add_food_every = 250;
-	skip_food = 0;
-	add_bad_every = 34; //meaning how often a obs is created, in this case every 50 loops so every 5 seconds
-	skip_bad = 1;
+    add_food_every = 100;
+    skip_food = 0;
+    add_bad_every = 34; //meaning how often a obs is created, in this case every 50 loops so every 5 seconds
+    skip_bad = 1;
 }
 default_values()
 
@@ -836,7 +836,7 @@ function obs_loop() {
 				skip_bad = choose([1, 1, 1, 1, 2, 2, 3]);
 			}
 			
-			if (score > 200) {
+			if (score > 80) {
 				choose([summonFox, summonHawk])();
 			} else {
 				summonFox();
